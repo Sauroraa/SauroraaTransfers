@@ -151,9 +151,10 @@ textarea {
 
 .simple-home {
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 34px;
-  align-items: stretch;
+  grid-template-columns: minmax(320px, 420px);
+  justify-content: start;
+  gap: 0;
+  align-items: start;
   height: calc(100vh - 122px);
   height: calc(100dvh - 122px);
   min-height: 0;
@@ -165,6 +166,7 @@ textarea {
   grid-template-rows: auto 1fr;
   gap: 18px;
   min-height: 0;
+  max-width: 420px;
 }
 
 .editorial-copy {
@@ -275,7 +277,6 @@ textarea {
 .mini-dropzone small,
 .file-mini-row small,
 .empty-copy,
-.showcase-caption p,
 .download-card p,
 .download-item small {
   color: var(--muted);
@@ -375,83 +376,6 @@ textarea {
   color: #8c2f2f;
 }
 
-.showcase-panel {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 24px;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.showcase-visual {
-  position: relative;
-  min-height: 0;
-  border-radius: 34px;
-  overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(21, 38, 93, 0.92), rgba(39, 89, 197, 0.72)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent);
-  box-shadow: 0 24px 60px rgba(46, 63, 118, 0.18);
-}
-
-.showcase-image-frame {
-  position: absolute;
-  inset: 22px;
-  border-radius: 28px;
-  background:
-    radial-gradient(circle at 25% 30%, rgba(255, 255, 255, 0.88), transparent 18%),
-    radial-gradient(circle at 70% 58%, rgba(108, 170, 255, 0.88), transparent 24%),
-    radial-gradient(circle at 50% 42%, rgba(7, 17, 43, 0.88), transparent 34%),
-    linear-gradient(145deg, #10224c 0%, #285bd0 48%, #eaf1ff 100%);
-}
-
-.showcase-image-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 82% 62%, rgba(255, 237, 216, 0.86), transparent 10%),
-    radial-gradient(circle at 58% 43%, rgba(8, 15, 28, 0.68), transparent 22%),
-    radial-gradient(circle at 36% 52%, rgba(255, 255, 255, 0.58), transparent 16%);
-  mix-blend-mode: screen;
-}
-
-.visual-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(30px);
-}
-
-.visual-orb-one {
-  width: 220px;
-  height: 220px;
-  top: -40px;
-  right: -20px;
-  background: rgba(105, 163, 255, 0.42);
-}
-
-.visual-orb-two {
-  width: 180px;
-  height: 180px;
-  bottom: -30px;
-  left: 10%;
-  background: rgba(255, 255, 255, 0.24);
-}
-
-.showcase-caption {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 20px;
-  align-items: start;
-}
-
-.showcase-caption h2 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.3rem);
-  letter-spacing: -0.05em;
-  line-height: 0.95;
-}
-
 .download-shell {
   display: grid;
   place-items: center;
@@ -527,19 +451,12 @@ textarea {
     min-height: 100dvh;
   }
 
-  .simple-home,
-  .showcase-caption {
-    grid-template-columns: 1fr;
-  }
-
   .simple-home {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
     height: auto;
     min-height: auto;
     overflow: visible;
-  }
-
-  .showcase-visual {
-    min-height: 420px;
   }
 }
 
@@ -555,9 +472,5 @@ textarea {
 
   .topbar-card {
     flex-wrap: wrap;
-  }
-
-  .showcase-visual {
-    min-height: 300px;
   }
 }

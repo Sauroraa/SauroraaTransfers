@@ -226,24 +226,6 @@ export default function HomePage() {
             {error ? <div className="inline-error">{error}</div> : null}
           </div>
         </aside>
-
-        <section className="showcase-panel">
-          <div className="showcase-visual">
-            <div className="visual-orb visual-orb-one" />
-            <div className="visual-orb visual-orb-two" />
-            <div className="showcase-image-frame">
-              <div className="showcase-image-glow" />
-            </div>
-          </div>
-
-          <div className="showcase-caption">
-            <h2>Transfers with clarity</h2>
-            <p>
-              Une home unique, sans scroll, ou l’outil d’envoi reste la piece centrale et le visuel
-              pose simplement la marque.
-            </p>
-          </div>
-        </section>
       </section>
     </main>
   );
