@@ -9,8 +9,11 @@ export default function DownloadPage() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
+  const [downloadError, setDownloadError] = useState("");
 
   useEffect(() => {
+    setStatus("loading");
+    setError("");
     fetchTransfer(token)
       .then((data) => {
         setTransfer(data);
@@ -33,14 +36,28 @@ export default function DownloadPage() {
   };
 
   const canDownload = status === "unlocked" || (transfer && !transfer.hasPassword);
+  const isExpired = error.toLowerCase().includes("expire");
+
+  const handleDownloadClick = (event) => {
+    if (!canDownload) {
+      event.preventDefault();
+      return;
+    }
+    setDownloadError("");
+  };
 
   return (
     <main className="page-shell download-shell">
       <AuroraBackground />
-      <section className="download-card glass-panel">
+      <section className="download-card">
         <span className="eyebrow">Portail de reception</span>
         {status === "loading" ? <h1>Chargement du transfert...</h1> : null}
-        {status === "error" ? <h1>{error}</h1> : null}
+        {status === "error" ? (
+          <>
+            <h1>{isExpired ? "Transfert expire" : "Portail indisponible"}</h1>
+            <p>{error}</p>
+          </>
+        ) : null}
         {transfer ? (
           <>
             <h1>Ouvrir le portail</h1>
@@ -64,7 +81,8 @@ export default function DownloadPage() {
               </div>
             ) : null}
 
-            {error && status !== "error" ? <div className="error-card">{error}</div> : null}
+            {error && status !== "error" ? <div className="inline-error">{error}</div> : null}
+            {downloadError ? <div className="inline-error">{downloadError}</div> : null}
 
             <div className="download-list">
               {transfer.files.map((file) => (
@@ -72,6 +90,7 @@ export default function DownloadPage() {
                   key={file.id}
                   className={`download-item ${canDownload ? "" : "disabled"}`}
                   href={canDownload ? downloadUrl(token, file.id, password) : undefined}
+                  onClick={handleDownloadClick}
                 >
                   <div>
                     <strong>{file.name}</strong>
@@ -87,4 +106,3 @@ export default function DownloadPage() {
     </main>
   );
 }
-

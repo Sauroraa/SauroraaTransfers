@@ -15,6 +15,40 @@ const { sanitizeFilename, toExpiryDate, hashValue, isExpired } = require("./util
 const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 20);
 const app = Fastify({ logger: true });
 
+async function cleanupSavedFiles(files) {
+  await Promise.all(
+    files.map(async (file) => {
+      try {
+        await fs.promises.unlink(file.storedPath);
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          throw error;
+        }
+      }
+    })
+  );
+}
+
+async function waitForDatabase() {
+  if (config.dataDriver === "file") {
+    return;
+  }
+
+  const attempts = 20;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      await pool.query("SELECT 1");
+      return;
+    } catch (error) {
+      if (attempt === attempts) {
+        throw error;
+      }
+      app.log.warn({ attempt, err: error }, "Database not ready yet, retrying");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
+}
+
 async function serializeTransfer(transferId) {
   let transfer;
   let files;
@@ -184,6 +218,7 @@ app.post("/transfers", async (request, reply) => {
       shareUrl: `${config.appBaseUrl}/d/${token}`
     });
   } catch (error) {
+    await cleanupSavedFiles(filesToInsert);
     throw error;
   }
 });
@@ -197,6 +232,10 @@ app.get("/transfers/:token", async (request, reply) => {
     return reply.code(404).send({ message: "Transfert introuvable." });
   }
 
+  if (isExpired(transfer)) {
+    return reply.code(410).send({ message: "Transfert expire." });
+  }
+
   return reply.send(await serializeTransfer(transfer.id));
 });
 
@@ -207,6 +246,9 @@ app.post("/transfers/:token/verify", async (request, reply) => {
 
   if (!transfer) {
     return reply.code(404).send({ message: "Transfert introuvable." });
+  }
+  if (isExpired(transfer)) {
+    return reply.code(410).send({ message: "Transfert expire." });
   }
   if (!transfer.password_hash) {
     return reply.send({ ok: true });
@@ -256,6 +298,12 @@ app.get("/download/:token/:fileId", async (request, reply) => {
     return reply.code(404).send({ message: "Fichier introuvable." });
   }
 
+  try {
+    await fs.promises.access(file.stored_path, fs.constants.R_OK);
+  } catch {
+    return reply.code(410).send({ message: "Fichier indisponible." });
+  }
+
   if (config.dataDriver === "file") {
     await fileStore.incrementDownloadCount(transfer.id, file.id);
   } else {
@@ -267,7 +315,10 @@ app.get("/download/:token/:fileId", async (request, reply) => {
   }
 
   reply.header("Content-Type", file.mime_type || "application/octet-stream");
-  reply.header("Content-Disposition", `attachment; filename="${encodeURIComponent(file.original_name)}"`);
+  reply.header(
+    "Content-Disposition",
+    `attachment; filename="${sanitizeFilename(file.original_name)}"; filename*=UTF-8''${encodeURIComponent(file.original_name)}`
+  );
   return reply.send(fs.createReadStream(file.stored_path));
 });
 
@@ -276,6 +327,7 @@ async function start() {
   if (config.dataDriver === "file") {
     await fileStore.ensureDataFile();
   } else {
+    await waitForDatabase();
     await ensureSchema();
   }
   await app.listen({ port: config.port, host: "0.0.0.0" });

@@ -11,6 +11,7 @@ export default function HomePage() {
   const [phase, setPhase] = useState("idle");
   const [shareUrl, setShareUrl] = useState("");
   const [error, setError] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const [options, setOptions] = useState({
     expirationPreset: "7d",
     password: "",
@@ -21,7 +22,19 @@ export default function HomePage() {
   const totalSizeLabel = `${(files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB`;
 
   const mergeFiles = (incoming) => {
-    setFiles((current) => [...current, ...incoming]);
+    const filteredIncoming = incoming.filter((file) => file && file.size >= 0);
+    setFiles((current) => {
+      const seen = new Set(current.map((file) => `${file.name}-${file.size}-${file.lastModified}`));
+      const next = [...current];
+      for (const file of filteredIncoming) {
+        const signature = `${file.name}-${file.size}-${file.lastModified}`;
+        if (!seen.has(signature)) {
+          seen.add(signature);
+          next.push(file);
+        }
+      }
+      return next;
+    });
     setError("");
     setShareUrl("");
   };
@@ -33,6 +46,10 @@ export default function HomePage() {
   };
 
   const handleUpload = async () => {
+    if (isUploading) {
+      return;
+    }
+
     if (!files.length) {
       setError("Ajoute au moins un fichier pour lancer le transfert.");
       return;
@@ -41,6 +58,7 @@ export default function HomePage() {
     setPhase("prepare");
     setProgress(8);
     setError("");
+    setIsUploading(true);
 
     const formData = new FormData();
     files.forEach((file) => formData.append("files", file));
@@ -61,11 +79,13 @@ export default function HomePage() {
         setPhase("done");
         setProgress(100);
         setShareUrl(result.shareUrl);
+        setIsUploading(false);
       }, 350);
     } catch (uploadError) {
       setError(uploadError.message);
       setPhase("idle");
       setProgress(0);
+      setIsUploading(false);
     }
   };
 
@@ -75,6 +95,10 @@ export default function HomePage() {
     setProgress(0);
     setPhase("idle");
     setError("");
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -92,7 +116,10 @@ export default function HomePage() {
         type="file"
         hidden
         multiple
-        onChange={(event) => mergeFiles(Array.from(event.target.files || []))}
+        onChange={(event) => {
+          mergeFiles(Array.from(event.target.files || []));
+          event.target.value = "";
+        }}
       />
 
       <header className="simple-topbar">
@@ -129,10 +156,15 @@ export default function HomePage() {
             <div className="core-glow core-glow-two" aria-hidden="true" />
 
             <div className="upload-card-top">
-              <button type="button" className="upload-picker" onClick={() => fileInputRef.current?.click()}>
+              <button
+                type="button"
+                className="upload-picker"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
                 Ajouter des fichiers
               </button>
-              <button type="button" className="upload-picker muted" onClick={handleReset}>
+              <button type="button" className="upload-picker muted" onClick={handleReset} disabled={isUploading}>
                 Reinitialiser
               </button>
             </div>
@@ -213,8 +245,8 @@ export default function HomePage() {
                 <span>{phase === "idle" ? "Pret" : phase}</span>
                 <strong>{progress}%</strong>
               </div>
-              <button type="button" className="launch-button full" onClick={handleUpload}>
-                Generer un lien
+              <button type="button" className="launch-button full" onClick={handleUpload} disabled={isUploading}>
+                {isUploading ? "Transmission en cours..." : "Generer un lien"}
               </button>
             </div>
 

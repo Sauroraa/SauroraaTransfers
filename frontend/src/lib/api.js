@@ -1,5 +1,14 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost/api";
 
+async function readErrorMessage(response, fallbackMessage) {
+  try {
+    const data = await response.json();
+    return data.message || fallbackMessage;
+  } catch {
+    return fallbackMessage;
+  }
+}
+
 export function uploadTransfer(formData, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -13,7 +22,11 @@ export function uploadTransfer(formData, onProgress) {
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve(JSON.parse(xhr.responseText));
       } else {
-        reject(new Error(JSON.parse(xhr.responseText).message || "Upload impossible."));
+        try {
+          reject(new Error(JSON.parse(xhr.responseText).message || "Upload impossible."));
+        } catch {
+          reject(new Error("Upload impossible."));
+        }
       }
     };
     xhr.onerror = () => reject(new Error("Erreur reseau."));
@@ -24,7 +37,7 @@ export function uploadTransfer(formData, onProgress) {
 export async function fetchTransfer(token) {
   const response = await fetch(`${API_BASE}/transfers/${token}`);
   if (!response.ok) {
-    throw new Error("Transfert introuvable.");
+    throw new Error(await readErrorMessage(response, "Transfert introuvable."));
   }
   return response.json();
 }
@@ -36,8 +49,7 @@ export async function verifyTransfer(token, password) {
     body: JSON.stringify({ password })
   });
   if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.message || "Verification impossible.");
+    throw new Error(await readErrorMessage(response, "Verification impossible."));
   }
   return response.json();
 }
@@ -49,4 +61,3 @@ export function downloadUrl(token, fileId, password) {
   }
   return url.toString();
 }
-
