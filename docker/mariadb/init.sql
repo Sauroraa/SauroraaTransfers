@@ -1,0 +1,49 @@
+CREATE TABLE IF NOT EXISTS transfers (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  public_token VARCHAR(64) NOT NULL UNIQUE,
+  slug VARCHAR(96) NOT NULL UNIQUE,
+  status VARCHAR(24) NOT NULL DEFAULT 'ready',
+  total_size BIGINT NOT NULL DEFAULT 0,
+  file_count INT NOT NULL DEFAULT 0,
+  expires_at DATETIME NOT NULL,
+  download_limit INT NULL,
+  download_count INT NOT NULL DEFAULT 0,
+  password_hash VARCHAR(255) NULL,
+  message TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  ip_hash VARCHAR(128) NULL,
+  user_agent_hash VARCHAR(128) NULL
+);
+
+CREATE TABLE IF NOT EXISTS transfer_files (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  transfer_id BIGINT NOT NULL,
+  original_name VARCHAR(255) NOT NULL,
+  stored_name VARCHAR(255) NOT NULL,
+  stored_path TEXT NOT NULL,
+  mime_type VARCHAR(160) NULL,
+  size_bytes BIGINT NOT NULL,
+  checksum VARCHAR(128) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_transfer_files_transfer
+    FOREIGN KEY (transfer_id) REFERENCES transfers(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS transfer_events (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  transfer_id BIGINT NOT NULL,
+  event_type VARCHAR(64) NOT NULL,
+  meta_json JSON NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_transfer_events_transfer
+    FOREIGN KEY (transfer_id) REFERENCES transfers(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS blocked_ips (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  ip_hash VARCHAR(128) NOT NULL UNIQUE,
+  reason VARCHAR(255) NOT NULL,
+  expires_at DATETIME NULL
+);
+
