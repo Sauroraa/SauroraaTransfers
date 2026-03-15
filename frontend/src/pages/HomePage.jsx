@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import AuroraBackground from "../components/AuroraBackground.jsx";
+import SignalField from "../components/SignalField.jsx";
 import { uploadTransfer } from "../lib/api.js";
 
 export default function HomePage() {
@@ -85,6 +86,7 @@ export default function HomePage() {
       onDrop={handleDrop}
     >
       <AuroraBackground />
+      <SignalField energy={progress + (isDragging ? 24 : 0)} />
       <input
         ref={fileInputRef}
         type="file"
@@ -96,24 +98,36 @@ export default function HomePage() {
       <header className="simple-topbar">
         <div className="brand-mark">Sa</div>
         <div className="topbar-card">
-          <span>Transfers</span>
-          <span>Simple upload</span>
+          <span>Direct upload</span>
+          <span>Unique link</span>
           <span>No account</span>
         </div>
       </header>
 
       <section className="simple-home">
-        <aside className="upload-sidebar centered">
-          <div className="editorial-copy">
+        <section className="signal-stage">
+          <div className="hero-badge hero-badge-left">
+            <span className="hero-badge-label">Transmission</span>
+            <strong>{phase === "idle" ? "En attente" : phase}</strong>
+          </div>
+          <div className="hero-badge hero-badge-right">
+            <span className="hero-badge-label">Volume</span>
+            <strong>{totalSizeLabel}</strong>
+          </div>
+
+          <div className="hero-copy-block">
             <span className="eyebrow dark">SauroraaTransfers</span>
-            <h1>Envoyez vos fichiers. Rien de plus.</h1>
+            <h1>Deposez vos fichiers dans un signal vivant.</h1>
             <p>
-              Une page simple, un lien direct, une interface propre pour partager des fichiers
-              volumineux sans compte.
+              Une seule page, un noyau central, un lien net. L’interface reagit a votre geste et
+              transforme chaque envoi en mouvement.
             </p>
           </div>
 
-          <div className={`upload-card ${isDragging ? "dragging" : ""}`}>
+          <div className={`upload-card signal-card ${isDragging ? "dragging" : ""}`}>
+            <div className="core-glow core-glow-one" aria-hidden="true" />
+            <div className="core-glow core-glow-two" aria-hidden="true" />
+
             <div className="upload-card-top">
               <button type="button" className="upload-picker" onClick={() => fileInputRef.current?.click()}>
                 Ajouter des fichiers
@@ -130,7 +144,7 @@ export default function HomePage() {
 
             <div className="mini-dropzone" onClick={() => fileInputRef.current?.click()}>
               <strong>Glissez vos fichiers ici</strong>
-              <small>ou cliquez pour selectionner</small>
+              <small>Le noyau absorbe le depot et prepare votre lien.</small>
             </div>
 
             <div className="file-mini-list">
@@ -152,7 +166,7 @@ export default function HomePage() {
                   </div>
                 ))
               ) : (
-                <p className="empty-copy">Aucun fichier ajoute pour le moment.</p>
+                <p className="empty-copy">Ajoutez vos fichiers pour lancer le signal.</p>
               )}
             </div>
 
@@ -200,13 +214,13 @@ export default function HomePage() {
                 <strong>{progress}%</strong>
               </div>
               <button type="button" className="launch-button full" onClick={handleUpload}>
-                Obtenir un lien
+                Generer un lien
               </button>
             </div>
 
             {shareUrl ? (
               <div className="success-panel">
-                <span className="eyebrow dark">Lien genere</span>
+                <span className="eyebrow dark">Lien cristallise</span>
                 <p>{shareUrl}</p>
                 <div className="success-actions">
                   <button
@@ -225,7 +239,7 @@ export default function HomePage() {
 
             {error ? <div className="inline-error">{error}</div> : null}
           </div>
-        </aside>
+        </section>
       </section>
     </main>
   );
