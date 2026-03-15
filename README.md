@@ -20,10 +20,10 @@ SauroraaTransfers est un MVP full-stack inspire du concept `Aurora Stream Upload
 
 1. Copier `.env.example` vers `.env`
 2. Ajuster les secrets si necessaire
-3. Verifier dans `.env` que `APP_BASE_URL` et `VITE_API_BASE_URL` pointent vers `http://dl.sauroraa.be`
+3. Verifier dans `.env` que `APP_BASE_URL` et `VITE_API_BASE_URL` pointent vers `https://dl.sauroraa.be`
 4. Lancer `docker compose up --build`
 
-L'application sera disponible sur `http://dl.sauroraa.be`.
+L'application sera disponible sur `https://dl.sauroraa.be`.
 
 ## Endpoints MVP
 

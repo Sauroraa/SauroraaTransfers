@@ -1,9 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import AuroraBackground from "../components/AuroraBackground.jsx";
-import FileQueuePanel from "../components/FileQueuePanel.jsx";
-import LinkRevealCard from "../components/LinkRevealCard.jsx";
-import TransferTimeline from "../components/TransferTimeline.jsx";
-import UploadOrb from "../components/UploadOrb.jsx";
 import { uploadTransfer } from "../lib/api.js";
 
 export default function HomePage() {
@@ -21,10 +17,7 @@ export default function HomePage() {
     message: ""
   });
 
-  const totalSizeLabel = useMemo(() => {
-    const total = files.reduce((sum, file) => sum + file.size, 0);
-    return `${(total / 1024 / 1024).toFixed(2)} MB`;
-  }, [files]);
+  const totalSizeLabel = `${(files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(2)} MB`;
 
   const mergeFiles = (incoming) => {
     setFiles((current) => [...current, ...incoming]);
@@ -100,103 +93,158 @@ export default function HomePage() {
         onChange={(event) => mergeFiles(Array.from(event.target.files || []))}
       />
 
-      <section className="hero-layout">
-        <div className="hero-copy">
-          <span className="eyebrow">SauroraaTransfers</span>
-          <h2>Traversez une aurore numerique pour partager vos fichiers massifs.</h2>
-          <p>
-            L’interface entiere devient votre zone de depot. Glissez, envoyez, recevez un lien net
-            et immediat, sans creer de compte.
-          </p>
-          <div className="metric-row">
-            <div className="glass-panel metric-card">
-              <strong>{files.length}</strong>
-              <span>Elements dans le flux</span>
+      <header className="simple-topbar">
+        <div className="brand-mark">Sa</div>
+        <div className="topbar-card">
+          <span>Transfers</span>
+          <span>Simple upload</span>
+          <span>No account</span>
+        </div>
+      </header>
+
+      <section className="simple-home">
+        <aside className="upload-sidebar">
+          <div className="editorial-copy">
+            <span className="eyebrow dark">SauroraaTransfers</span>
+            <h1>Envoyez vos fichiers. Rien de plus.</h1>
+            <p>
+              Une page simple, un lien direct, une interface propre pour partager des fichiers
+              volumineux sans compte.
+            </p>
+          </div>
+
+          <div className={`upload-card ${isDragging ? "dragging" : ""}`}>
+            <div className="upload-card-top">
+              <button type="button" className="upload-picker" onClick={() => fileInputRef.current?.click()}>
+                Ajouter des fichiers
+              </button>
+              <button type="button" className="upload-picker muted" onClick={handleReset}>
+                Reinitialiser
+              </button>
             </div>
-            <div className="glass-panel metric-card">
-              <strong>{totalSizeLabel}</strong>
-              <span>Volume embarque</span>
+
+            <div className="upload-stats">
+              <span>{files.length} fichier(s)</span>
+              <span>{totalSizeLabel}</span>
+            </div>
+
+            <div className="mini-dropzone" onClick={() => fileInputRef.current?.click()}>
+              <strong>Glissez vos fichiers ici</strong>
+              <small>ou cliquez pour selectionner</small>
+            </div>
+
+            <div className="file-mini-list">
+              {files.length ? (
+                files.map((file) => (
+                  <div className="file-mini-row" key={`${file.name}-${file.lastModified}`}>
+                    <div>
+                      <strong>{file.name}</strong>
+                      <small>{(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFiles((current) => current.filter((currentFile) => currentFile !== file))
+                      }
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="empty-copy">Aucun fichier ajoute pour le moment.</p>
+              )}
+            </div>
+
+            <div className="compact-fields">
+              <label>
+                Expiration
+                <select
+                  value={options.expirationPreset}
+                  onChange={(event) =>
+                    setOptions((current) => ({ ...current, expirationPreset: event.target.value }))
+                  }
+                >
+                  <option value="24h">24 heures</option>
+                  <option value="7d">7 jours</option>
+                  <option value="30d">30 jours</option>
+                </select>
+              </label>
+              <label>
+                Mot de passe
+                <input
+                  type="password"
+                  value={options.password}
+                  onChange={(event) =>
+                    setOptions((current) => ({ ...current, password: event.target.value }))
+                  }
+                  placeholder="Optionnel"
+                />
+              </label>
+              <label>
+                Message
+                <textarea
+                  rows="3"
+                  value={options.message}
+                  onChange={(event) =>
+                    setOptions((current) => ({ ...current, message: event.target.value }))
+                  }
+                  placeholder="Ajouter un message"
+                />
+              </label>
+            </div>
+
+            <div className="upload-footer">
+              <div className="progress-inline">
+                <span>{phase === "idle" ? "Pret" : phase}</span>
+                <strong>{progress}%</strong>
+              </div>
+              <button type="button" className="launch-button full" onClick={handleUpload}>
+                Obtenir un lien
+              </button>
+            </div>
+
+            {shareUrl ? (
+              <div className="success-panel">
+                <span className="eyebrow dark">Lien genere</span>
+                <p>{shareUrl}</p>
+                <div className="success-actions">
+                  <button
+                    type="button"
+                    className="upload-picker"
+                    onClick={() => navigator.clipboard.writeText(shareUrl)}
+                  >
+                    Copier le lien
+                  </button>
+                  <button type="button" className="upload-picker muted" onClick={handleReset}>
+                    Nouvel envoi
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {error ? <div className="inline-error">{error}</div> : null}
+          </div>
+        </aside>
+
+        <section className="showcase-panel">
+          <div className="showcase-visual">
+            <div className="visual-orb visual-orb-one" />
+            <div className="visual-orb visual-orb-two" />
+            <div className="showcase-image-frame">
+              <div className="showcase-image-glow" />
             </div>
           </div>
-        </div>
 
-        <div className="hero-orb-wrap">
-          <UploadOrb
-            isDragging={isDragging}
-            progress={progress}
-            onBrowse={() => fileInputRef.current?.click()}
-          />
-          <button type="button" className="launch-button" onClick={handleUpload}>
-            Deposer dans le flux
-          </button>
-        </div>
+          <div className="showcase-caption">
+            <h2>Transfers with clarity</h2>
+            <p>
+              Une home unique, sans scroll, ou l’outil d’envoi reste la piece centrale et le visuel
+              pose simplement la marque.
+            </p>
+          </div>
+        </section>
       </section>
-
-      <section className="control-grid">
-        <FileQueuePanel
-          files={files}
-          onRemove={(fileToRemove) =>
-            setFiles((current) => current.filter((file) => file !== fileToRemove))
-          }
-        />
-
-        <div className="glass-panel option-panel">
-          <span className="eyebrow">Parametres avances</span>
-          <label>
-            Expiration
-            <select
-              value={options.expirationPreset}
-              onChange={(event) =>
-                setOptions((current) => ({ ...current, expirationPreset: event.target.value }))
-              }
-            >
-              <option value="24h">24 heures</option>
-              <option value="7d">7 jours</option>
-              <option value="30d">30 jours</option>
-            </select>
-          </label>
-          <label>
-            Mot de passe optionnel
-            <input
-              type="password"
-              value={options.password}
-              onChange={(event) =>
-                setOptions((current) => ({ ...current, password: event.target.value }))
-              }
-              placeholder="Laisser vide pour acces libre"
-            />
-          </label>
-          <label>
-            Limite de telechargements
-            <input
-              type="number"
-              min="1"
-              value={options.downloadLimit}
-              onChange={(event) =>
-                setOptions((current) => ({ ...current, downloadLimit: event.target.value }))
-              }
-              placeholder="Illimite"
-            />
-          </label>
-          <label>
-            Message joint
-            <textarea
-              rows="4"
-              value={options.message}
-              onChange={(event) =>
-                setOptions((current) => ({ ...current, message: event.target.value }))
-              }
-              placeholder="Ajouter un contexte pour le destinataire"
-            />
-          </label>
-        </div>
-
-        <TransferTimeline phase={phase} progress={progress} />
-      </section>
-
-      <LinkRevealCard shareUrl={shareUrl} onReset={handleReset} />
-      {error ? <div className="glass-panel error-card">{error}</div> : null}
     </main>
   );
 }
-
