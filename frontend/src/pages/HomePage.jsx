@@ -103,7 +103,7 @@ export default function HomePage() {
       </header>
 
       <section className="simple-home">
-        <aside className="upload-sidebar">
+        <aside className="upload-sidebar centered">
           <div className="editorial-copy">
             <span className="eyebrow dark">SauroraaTransfers</span>
             <h1>Envoyez vos fichiers. Rien de plus.</h1>
