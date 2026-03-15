@@ -22,7 +22,7 @@
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
@@ -33,7 +33,8 @@ body {
     radial-gradient(circle at top, rgba(71, 97, 255, 0.12), transparent 30%),
     linear-gradient(180deg, #07111d 0%, #091528 100%);
   color: var(--text);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 a {
@@ -50,10 +51,9 @@ textarea {
 
 .page-shell {
   position: relative;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 18px;
-  overflow: hidden;
 }
 
 .signal-field,
@@ -166,14 +166,16 @@ textarea {
   place-items: center;
   min-height: calc(100vh - 102px);
   min-height: calc(100dvh - 102px);
+  padding: 24px 0 48px;
 }
 
 .signal-stage {
   position: relative;
   width: min(100%, 1020px);
-  min-height: 720px;
+  min-height: 0;
   display: grid;
   place-items: center;
+  padding: 48px 0 0;
 }
 
 .hero-copy-block {
@@ -181,7 +183,7 @@ textarea {
   z-index: 2;
   max-width: 700px;
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 36px;
 }
 
 .eyebrow {
@@ -560,12 +562,7 @@ textarea {
 }
 
 @media (max-width: 1024px) {
-  body {
-    overflow: auto;
-  }
-
   .page-shell {
-    height: auto;
     min-height: 100vh;
     min-height: 100dvh;
   }
@@ -576,7 +573,6 @@ textarea {
   }
 
   .signal-stage {
-    min-height: auto;
     padding-top: 80px;
   }
 
